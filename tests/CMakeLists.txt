@@ -37,5 +37,4 @@ endif ()
 add_executable(${PROJECT_NAME} list_test.cc)
 target_link_libraries(${PROJECT_NAME} intrusive_list)
 
-enable_testing()
 add_test(NAME ${PROJECT_NAME}_test COMMAND ${PROJECT_NAME})
