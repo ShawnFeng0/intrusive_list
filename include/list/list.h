@@ -128,7 +128,7 @@ class list {
   list_node head_;
 
  public:
-  list() : head_({&head_, &head_}) {}
+  list() noexcept : head_({&head_, &head_}) {}
 
   /**
    * insert item at the front of list.
