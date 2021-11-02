@@ -2,7 +2,7 @@
 // Created by fs on 2020-09-21.
 //
 
-#include "list/list.h"
+#include "intrusive_list/list.h"
 
 #include <gtest/gtest.h>
 
