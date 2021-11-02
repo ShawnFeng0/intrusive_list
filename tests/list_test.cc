@@ -11,14 +11,14 @@
 struct list_test_struct {
   int value;
 
-  list::list_node node1;
-  list::list_node node2;
+  intrusive_list::list_node node1;
+  intrusive_list::list_node node2;
 };
 
 TEST(list, push_front) {
   std::list<list_test_struct> s(10);
 
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
     list.push_front(&i);
   }
@@ -29,7 +29,7 @@ TEST(list, push_front) {
 
 TEST(list, push_back) {
   std::list<list_test_struct> s(10);
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
     list.push_back(&i);
   }
@@ -40,7 +40,7 @@ TEST(list, push_back) {
 
 TEST(list, pop) {
   std::list<list_test_struct> s(10);
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
     list.push_back(&i);
   }
@@ -60,7 +60,7 @@ TEST(list, pop) {
 
 TEST(list, empty) {
   std::list<list_test_struct> s(10);
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   ASSERT_TRUE(list.empty());
 
   for (auto& i : s) {
@@ -78,7 +78,7 @@ TEST(list, empty) {
 
 TEST(list, rotate_left) {
   std::list<list_test_struct> s(10);
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   ASSERT_TRUE(list.empty());
   for (auto& i : s) {
     list.push_back(&i);
@@ -90,9 +90,9 @@ TEST(list, rotate_left) {
   ASSERT_EQ(front, list.back());
 }
 
-TEST(list, is_singular) {
+TEST(intrusive_list, is_singular) {
   std::array<list_test_struct, 3> s{};
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
 
   ASSERT_FALSE(list.is_singular());
 
@@ -115,7 +115,7 @@ TEST(list, is_singular) {
 
 TEST(list, iterator) {
   std::list<list_test_struct> s(10);
-  list::list<list_test_struct, &list_test_struct::node1> list;
+  intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
 
   for (auto& i : s) {
     list.push_back(&i);

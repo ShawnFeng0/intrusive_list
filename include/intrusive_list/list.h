@@ -1,27 +1,14 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include "common.h"
 
-namespace list {
+namespace intrusive_list {
 
 struct list_node {
   struct list_node *next, *prev;
 };
 
 namespace internal {
-
-template <class Type, class Member>
-static inline constexpr ptrdiff_t offset_of(const Member Type::*member) {
-  return reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<Type *>(0)->*member));
-}
-
-template <class Type, class Member>
-static inline constexpr Type *owner_of(const Member *ptr,
-                                       const Member Type::*member) {
-  return reinterpret_cast<Type *>(reinterpret_cast<intptr_t>(ptr) -
-                                  offset_of(member));
-}
 
 /*
  * Insert a new entry between two known consecutive entries.
@@ -187,7 +174,12 @@ class list {
   struct Iterator {
     explicit Iterator(list_node *v) : node(v) {}
     explicit operator list_node *() const { return node; }
-    inline bool operator!=(const Iterator &rhs) { return node != rhs.node; }
+    inline bool operator!=(const Iterator &rhs) const {
+      return node != rhs.node;
+    }
+    inline bool operator==(const Iterator &rhs) const {
+      return node == rhs.node;
+    }
     T *operator*() const { return get_owner(node); }
     Iterator &operator++() {
       node = node->next;
@@ -221,4 +213,4 @@ class list {
   }
 };
 
-}  // namespace list
+}  // namespace intrusive_list
