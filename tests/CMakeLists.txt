@@ -34,7 +34,8 @@ else ()
 endif ()
 
 # Now simply link against gtest or gtest_main as needed. Eg
-add_executable(${PROJECT_NAME} list_test.cc)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCES)
+add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} intrusive_list)
 
 add_test(NAME ${PROJECT_NAME}_test COMMAND ${PROJECT_NAME})
