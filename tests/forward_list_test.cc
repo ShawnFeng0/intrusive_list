@@ -24,7 +24,7 @@ TEST(forward_list, push_pop) {
 
   intrusive_list::forward_list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
-    list.push_front(&i);
+    list.push_front(i);
   }
   // The above is reverse insertion, in order to keep the two lists consistent,
   // it should be reversed
@@ -33,7 +33,7 @@ TEST(forward_list, push_pop) {
   for (auto& i : s) {
     auto node = list.front();
     list.pop_front();
-    ASSERT_EQ(node, &i);
+    ASSERT_EQ(node, i);
   }
 }
 
@@ -43,7 +43,7 @@ TEST(forward_list, empty) {
   ASSERT_TRUE(list.empty());
 
   for (auto& i : s) {
-    list.push_front(&i);
+    list.push_front(i);
     ASSERT_FALSE(list.empty());
   }
 
@@ -61,11 +61,11 @@ TEST(forward_list, is_singular) {
 
   ASSERT_FALSE(list.is_singular());
 
-  list.push_front(&s[0]);  // 1
+  list.push_front(s[0]);  // 1
   ASSERT_TRUE(list.is_singular());
-  list.push_front(&s[1]);  // 2
+  list.push_front(s[1]);  // 2
   ASSERT_FALSE(list.is_singular());
-  list.push_front(&s[2]);  // 3
+  list.push_front(s[2]);  // 3
 
   ASSERT_FALSE(list.is_singular());
 
@@ -83,13 +83,13 @@ TEST(forward_list, iterator) {
   intrusive_list::forward_list<list_test_struct, &list_test_struct::node1> list;
 
   for (auto& i : s) {
-    list.push_front(&i);
+    list.push_front(i);
   }
 
   auto i = s.rbegin();
   auto j = list.begin();
   for (; i != s.rend() && j != list.end(); ++i, ++j) {
-    ASSERT_EQ(&*i, *j);
+    ASSERT_EQ(*i, *j);
   }
 
   ASSERT_EQ(i, s.rend());
@@ -103,7 +103,7 @@ TEST(forward_list, remove) {
   int num = 0;
   for (auto& i : s) {
     i.value = num++;
-    list.push_front(&i);
+    list.push_front(i);
   }
 
   ASSERT_EQ(1, list.remove({.value = 5}));

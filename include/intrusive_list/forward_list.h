@@ -22,9 +22,9 @@ class forward_list {
    * insert item at the front of list.
    * @param item item to insert in list.
    */
-  void push_front(T *item) {
-    get_node(item)->next = head_.next;
-    head_.next = get_node(item);
+  void push_front(T &item) {
+    get_node(&item)->next = head_.next;
+    head_.next = get_node(&item);
   }
 
   bool is_singular() { return (head_.next && head_.next->next == nullptr); }
@@ -40,7 +40,7 @@ class forward_list {
    *
    * Note list need not empty.
    */
-  T *front() { return get_owner(head_.next); }
+  T &front() { return *get_owner(head_.next); }
 
   int remove(const T &item) {
     return remove_if([&](const T &i) { return item == i; });
@@ -76,7 +76,7 @@ class forward_list {
     inline bool operator==(const Iterator &rhs) const {
       return node == rhs.node;
     }
-    T *operator*() const { return get_owner(node); }
+    T &operator*() const { return *get_owner(node); }
     Iterator &operator++() {
       node = node->next;
       return *this;

@@ -13,46 +13,48 @@ struct list_test_struct {
 
   intrusive_list::list_node node1;
   intrusive_list::list_node node2;
+
+  bool operator==(const list_test_struct& rhs) const { return this == &rhs; }
+  bool operator!=(const list_test_struct& rhs) const { return this != &rhs; }
 };
 
 TEST(list, push_front) {
   std::list<list_test_struct> s(10);
-
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
-    list.push_front(&i);
+    list.push_front(i);
   }
 
-  ASSERT_EQ(list.front(), &s.back());
-  ASSERT_EQ(list.back(), &s.front());
+  ASSERT_EQ(list.front(), s.back());
+  ASSERT_EQ(list.back(), s.front());
 }
 
 TEST(list, push_back) {
   std::list<list_test_struct> s(10);
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
-    list.push_back(&i);
+    list.push_back(i);
   }
 
-  ASSERT_EQ(list.front(), &s.front());
-  ASSERT_EQ(list.back(), &s.back());
+  ASSERT_EQ(list.front(), s.front());
+  ASSERT_EQ(list.back(), s.back());
 }
 
 TEST(list, pop) {
   std::list<list_test_struct> s(10);
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   for (auto& i : s) {
-    list.push_back(&i);
+    list.push_back(i);
   }
 
   for (int i = 0; i < 3; ++i) {
-    ASSERT_EQ(list.front(), &s.front());
+    ASSERT_EQ(list.front(), s.front());
     list.pop_front();
     s.pop_front();
   }
 
   for (int i = 0; i < 3; ++i) {
-    ASSERT_EQ(list.back(), &s.back());
+    ASSERT_EQ(list.back(), s.back());
     list.pop_back();
     s.pop_back();
   }
@@ -64,7 +66,7 @@ TEST(list, empty) {
   ASSERT_TRUE(list.empty());
 
   for (auto& i : s) {
-    list.push_back(&i);
+    list.push_back(i);
     ASSERT_FALSE(list.empty());
   }
 
@@ -81,13 +83,13 @@ TEST(list, rotate_left) {
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
   ASSERT_TRUE(list.empty());
   for (auto& i : s) {
-    list.push_back(&i);
+    list.push_back(i);
   }
 
-  auto front = list.front();
+  auto& front = list.front();
   list.rotate_left();
-  ASSERT_NE(front, list.front());
-  ASSERT_EQ(front, list.back());
+  ASSERT_NE(&front, &list.front());
+  ASSERT_EQ(&front, &list.back());
 }
 
 TEST(intrusive_list, is_singular) {
@@ -96,11 +98,11 @@ TEST(intrusive_list, is_singular) {
 
   ASSERT_FALSE(list.is_singular());
 
-  list.push_front(&s[0]);  // 1
+  list.push_front(s[0]);  // 1
   ASSERT_TRUE(list.is_singular());
-  list.push_front(&s[1]);  // 2
+  list.push_front(s[1]);  // 2
   ASSERT_FALSE(list.is_singular());
-  list.push_front(&s[2]);  // 3
+  list.push_front(s[2]);  // 3
 
   ASSERT_FALSE(list.is_singular());
 
@@ -118,12 +120,12 @@ TEST(list, iterator) {
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
 
   for (auto& i : s) {
-    list.push_back(&i);
+    list.push_back(i);
   }
 
   auto i = s.begin();
   auto j = list.begin();
   for (; i != s.end() && j != list.end(); ++i, ++j) {
-    ASSERT_EQ(&*i, *j);
+    ASSERT_EQ(*i, *j);
   }
 }

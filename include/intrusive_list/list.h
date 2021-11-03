@@ -121,13 +121,13 @@ class list {
    * insert item at the front of list.
    * @param item item to insert in list.
    */
-  void push_front(T *item) { internal::list_add(get_node(item), &head_); }
+  void push_front(T &item) { internal::list_add(get_node(&item), &head_); }
 
   /**
    * insert item at the back of list.
    * @param item item to insert in list.
    */
-  void push_back(T *item) { internal::list_add_tail(get_node(item), &head_); }
+  void push_back(T &item) { internal::list_add_tail(get_node(&item), &head_); }
 
   void rotate_left() { internal::list_rotate_left(&head_); }
   bool is_singular() { return internal::list_is_singular(&head_); }
@@ -143,19 +143,12 @@ class list {
   void pop_back() { remove(back()); }
 
   /**
-   * remove item from list.
-   * @param item the element to remove
-   * @note item must exist in list!
-   */
-  void remove(T *item) { internal::_list_del_entry(get_node(item)); }
-
-  /**
    * return first item in list.
    * @return first item in list
    *
    * Note list need not empty.
    */
-  T *front() { return get_owner(head_.next); }
+  T &front() { return *get_owner(head_.next); }
 
   /**
    * return last item in list.
@@ -163,7 +156,7 @@ class list {
    *
    * Note list need not empty.
    */
-  T *back() { return get_owner(head_.prev); }
+  T &back() { return *get_owner(head_.prev); }
 
   /**
    * check if the list is empty.
@@ -180,7 +173,7 @@ class list {
     inline bool operator==(const Iterator &rhs) const {
       return node == rhs.node;
     }
-    T *operator*() const { return get_owner(node); }
+    T &operator*() const { return *get_owner(node); }
     Iterator &operator++() {
       node = node->next;
       return *this;
@@ -194,18 +187,15 @@ class list {
   Iterator end() const { return Iterator{&head_}; }
 
  private:
-  __attribute__((unused)) static inline constexpr list_node *get_node(
-      const T *item) {
-    return &(item->*node_field);
-  }
+  /**
+   * remove item from list.
+   * @param item the element to remove
+   * @note item must exist in list!
+   */
+  void remove(T &item) { internal::_list_del_entry(get_node(&item)); }
 
   static inline constexpr list_node *get_node(T *item) {
     return &(item->*node_field);
-  }
-
-  __attribute__((unused)) static inline constexpr const T *get_owner(
-      const list_node *member) {
-    return internal::owner_of(member, node_field);
   }
 
   static inline constexpr T *get_owner(list_node *member) {
