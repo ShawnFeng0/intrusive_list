@@ -6,6 +6,11 @@ namespace intrusive_list {
 
 struct list_node {
   struct list_node *next, *prev;
+
+  void remove_self_from_list() const {
+    next->prev = prev;
+    prev->next = next;
+  }
 };
 
 namespace internal {
@@ -49,22 +54,6 @@ static inline void list_add_tail(struct list_node *new_,
   _list_add(new_, head->prev, head);
 }
 
-/*
- * Delete a list entry by making the prev/next entries
- * point to each other.
- *
- * This is only for internal list manipulation where we know
- * the prev/next entries already!
- */
-static inline void _list_del(struct list_node *prev, struct list_node *next) {
-  next->prev = prev;
-  prev->next = next;
-}
-
-static inline void _list_del_entry(struct list_node *entry) {
-  _list_del(entry->prev, entry->next);
-}
-
 /**
  * list_move_tail - delete from one list and add as another's back
  * @list: the entry to move
@@ -72,7 +61,7 @@ static inline void _list_del_entry(struct list_node *entry) {
  */
 static inline void list_move_tail(struct list_node *list,
                                   struct list_node *head) {
-  _list_del_entry(list);
+  list->remove_self_from_list();
   list_add_tail(list, head);
 }
 
@@ -135,12 +124,12 @@ class list {
   /**
    * remove the first item in the list.
    */
-  void pop_front() { remove(front()); }
+  void pop_front() { get_node(&front())->remove_self_from_list(); }
 
   /**
    * remove the last item in the list.
    */
-  void pop_back() { remove(back()); }
+  void pop_back() { get_node(&back())->remove_self_from_list(); }
 
   /**
    * return first item in list.
@@ -187,13 +176,6 @@ class list {
   Iterator end() const { return Iterator{&head_}; }
 
  private:
-  /**
-   * remove item from list.
-   * @param item the element to remove
-   * @note item must exist in list!
-   */
-  void remove(T &item) { internal::_list_del_entry(get_node(&item)); }
-
   static inline constexpr list_node *get_node(T *item) {
     return &(item->*node_field);
   }
