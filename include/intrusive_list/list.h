@@ -7,10 +7,22 @@ namespace intrusive_list {
 struct list_node {
   struct list_node *next, *prev;
 
-  void remove_self_from_list() const {
+  /**
+   * Note that the node must already be in a list
+   */
+  auto remove_self_from_list() {
     next->prev = prev;
     prev->next = next;
+    return *this;
   }
+
+  auto reinitialize() {
+    next = nullptr;
+    prev = nullptr;
+    return *this;
+  }
+
+  auto have_container() const { return next && prev; }
 };
 
 namespace internal {
@@ -117,6 +129,12 @@ class list {
    * @param item item to insert in list.
    */
   void push_back(T &item) { internal::list_add_tail(get_node(&item), &head_); }
+
+  /**
+   * Note that the node must already be in a list
+   * @param item item to remove
+   */
+  void remove(T &item) { get_node(&item)->remove_self_from_list(); }
 
   void rotate_left() { internal::list_rotate_left(&head_); }
   bool is_singular() { return internal::list_is_singular(&head_); }
