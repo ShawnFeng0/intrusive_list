@@ -77,6 +77,7 @@ class forward_list {
       return node == rhs.node;
     }
     T &operator*() const { return *get_owner(node); }
+    T *operator->() const { return get_owner(node); }
     Iterator &operator++() {
       node = node->next;
       return *this;
