@@ -119,13 +119,22 @@ TEST(list, iterator) {
   std::list<list_test_struct> s(10);
   intrusive_list::list<list_test_struct, &list_test_struct::node1> list;
 
+  int value = 0;
   for (auto& i : s) {
+    i.value = value++;
     list.push_back(i);
   }
 
   auto i = s.begin();
   auto j = list.begin();
-  for (; i != s.end() && j != list.end(); ++i, ++j) {
+  for (; i != s.end() && j != list.end();) {
     ASSERT_EQ(*i, *j);
+    if (i->value > 3 && i->value < 6) {
+      j = list.erase(j);
+      i = s.erase(i);
+    } else {
+      ++i;
+      ++j;
+    }
   }
 }

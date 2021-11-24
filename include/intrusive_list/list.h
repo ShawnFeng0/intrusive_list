@@ -193,6 +193,12 @@ class list {
   Iterator end() { return Iterator{&head_}; }
   Iterator end() const { return Iterator{&head_}; }
 
+  Iterator erase(Iterator position) {
+    Iterator ret = Iterator((position.node->next));
+    remove(*position);
+    return ret;
+  }
+
  private:
   static inline constexpr list_node *get_node(T *item) {
     return &(item->*node_field);
