@@ -130,7 +130,12 @@ class list {
    * Note that the node must already be in a list
    * @param item item to remove
    */
-  void remove(T &item) { get_node(&item)->remove_self_from_list(); }
+  void remove_if_exists(T &item) {
+    decltype(auto) node = get_node(&item);
+    if (node->have_container()) {
+      node->remove_self_from_list();
+    }
+  }
 
   void rotate_left() { internal::list_rotate_left(&head_); }
   bool is_singular() { return internal::list_is_singular(&head_); }
@@ -192,7 +197,7 @@ class list {
 
   Iterator erase(Iterator position) {
     Iterator ret = Iterator((position.node->next));
-    remove(*position);
+    position.node->remove_self_from_list();
     return ret;
   }
 
