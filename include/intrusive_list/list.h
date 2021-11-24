@@ -13,10 +13,6 @@ struct list_node {
   auto remove_self_from_list() {
     next->prev = prev;
     prev->next = next;
-    return *this;
-  }
-
-  auto reinitialize() {
     next = nullptr;
     prev = nullptr;
     return *this;
