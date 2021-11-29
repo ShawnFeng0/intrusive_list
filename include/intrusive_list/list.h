@@ -1,26 +1,10 @@
 #pragma once
 
+#include <type_traits>
+
 #include "common.h"
 
 namespace intrusive_list {
-
-struct list_node {
-  struct list_node *next, *prev;
-
-  /**
-   * Note that the node must already be in a list
-   */
-  auto remove_self_from_list() {
-    next->prev = prev;
-    prev->next = next;
-    next = nullptr;
-    prev = nullptr;
-    return *this;
-  }
-
-  auto have_container() const { return next && prev; }
-};
-
 namespace internal {
 
 /*
@@ -29,8 +13,8 @@ namespace internal {
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static inline void _list_add(struct list_node *new_, struct list_node *prev,
-                             struct list_node *next) {
+template <typename Node>
+static inline void _list_add(Node *new_, Node *prev, Node *next) {
   next->prev = new_;
   new_->next = next;
   new_->prev = prev;
@@ -45,7 +29,8 @@ static inline void _list_add(struct list_node *new_, struct list_node *prev,
  * Insert a new entry after the specified front.
  * This is good for implementing stacks.
  */
-static inline void list_add(struct list_node *new_, struct list_node *head) {
+template <typename Node>
+static inline void list_add(Node *new_, Node *head) {
   _list_add(new_, head, head->next);
 }
 
@@ -57,9 +42,20 @@ static inline void list_add(struct list_node *new_, struct list_node *head) {
  * Insert a new entry before the specified front.
  * This is useful for implementing queues.
  */
-static inline void list_add_tail(struct list_node *new_,
-                                 struct list_node *head) {
+template <typename Node>
+static inline void list_add_tail(Node *new_, Node *head) {
   _list_add(new_, head->prev, head);
+}
+
+/**
+ * Note that the node must already be in a list
+ */
+template <typename Node>
+static inline void list_remove_self_from_list(Node *node) {
+  node->next->prev = node->prev;
+  node->prev->next = node->next;
+  node->next = nullptr;
+  node->prev = nullptr;
 }
 
 /**
@@ -67,9 +63,9 @@ static inline void list_add_tail(struct list_node *new_,
  * @list: the entry to move
  * @head: the front that will follow our entry
  */
-static inline void list_move_tail(struct list_node *list,
-                                  struct list_node *head) {
-  list->remove_self_from_list();
+template <typename Node>
+static inline void list_move_tail(Node *list, Node *head) {
+  list_remove_self_from_list(list);
   list_add_tail(list, head);
 }
 
@@ -77,7 +73,8 @@ static inline void list_move_tail(struct list_node *list,
  * list_empty - tests whether a list is empty
  * @head: the list to test.
  */
-static inline int list_empty(const struct list_node *head) {
+template <typename Node>
+static inline int list_empty(const Node *head) {
   return head->next == head;
 }
 
@@ -85,8 +82,9 @@ static inline int list_empty(const struct list_node *head) {
  * list_rotate_left - rotate the list to the left
  * @head: the front of the list
  */
-static inline void list_rotate_left(struct list_node *head) {
-  struct list_node *first;
+template <typename Node>
+static inline void list_rotate_left(Node *head) {
+  Node *first;
 
   if (!list_empty(head)) {
     first = head->next;
@@ -98,7 +96,8 @@ static inline void list_rotate_left(struct list_node *head) {
  * list_is_singular - tests whether a list has just one entry.
  * @head: the list to test.
  */
-static inline int list_is_singular(const struct list_node *head) {
+template <typename Node>
+static inline int list_is_singular(const Node *head) {
   return !list_empty(head) && (head->next == head->prev);
 }
 
@@ -107,9 +106,11 @@ static inline int list_is_singular(const struct list_node *head) {
 /**
  * list double linked list.
  */
-template <typename T, list_node T::*node_field>
+template <typename T, decltype(auto) node_field>
 class list {
-  list_node head_;
+  using Node = std::remove_reference_t<decltype((T *)nullptr->*node_field)>;
+
+  Node head_;
 
  public:
   list() noexcept : head_({&head_, &head_}) {}
@@ -132,8 +133,8 @@ class list {
    */
   void remove_if_exists(T &item) {
     decltype(auto) node = get_node(&item);
-    if (node->have_container()) {
-      node->remove_self_from_list();
+    if (node->next && node->prev) {
+      internal::list_remove_self_from_list(node);
     }
   }
 
@@ -143,12 +144,12 @@ class list {
   /**
    * remove the first item in the list.
    */
-  void pop_front() { get_node(&front())->remove_self_from_list(); }
+  void pop_front() { internal::list_remove_self_from_list(get_node(&front())); }
 
   /**
    * remove the last item in the list.
    */
-  void pop_back() { get_node(&back())->remove_self_from_list(); }
+  void pop_back() { internal::list_remove_self_from_list(get_node(&back())); }
 
   /**
    * return first item in list.
@@ -170,11 +171,11 @@ class list {
    * check if the list is empty.
    * @return true if list is empty.
    */
-  bool empty() const { return internal::list_empty(&head_); }
+  [[nodiscard]] bool empty() const { return internal::list_empty(&head_); }
 
   struct Iterator {
-    explicit Iterator(list_node *v) : node(v) {}
-    explicit operator list_node *() const { return node; }
+    explicit Iterator(Node *v) : node(v) {}
+    explicit operator Node *() const { return node; }
     inline bool operator!=(const Iterator &rhs) const {
       return node != rhs.node;
     }
@@ -187,7 +188,7 @@ class list {
       node = node->next;
       return *this;
     }
-    list_node *node;
+    Node *node;
   };
 
   Iterator begin() { return Iterator{head_.next}; }
@@ -197,16 +198,16 @@ class list {
 
   Iterator erase(Iterator position) {
     Iterator ret = Iterator((position.node->next));
-    position.node->remove_self_from_list();
+    internal::list_remove_self_from_list(position.node);
     return ret;
   }
 
  private:
-  static inline constexpr list_node *get_node(T *item) {
+  static inline constexpr Node *get_node(T *item) {
     return &(item->*node_field);
   }
 
-  static inline constexpr T *get_owner(list_node *member) {
+  static inline constexpr T *get_owner(Node *member) {
     return internal::owner_of(member, node_field);
   }
 };

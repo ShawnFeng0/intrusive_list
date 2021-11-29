@@ -8,6 +8,15 @@
 
 #include <list>
 
+namespace intrusive_list {
+
+struct list_node {
+  list_node* next;
+  list_node* prev;
+};
+
+}  // namespace intrusive_list
+
 struct list_test_struct {
   int value;
 
