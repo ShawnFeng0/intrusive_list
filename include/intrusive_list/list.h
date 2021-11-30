@@ -130,12 +130,16 @@ class list {
   /**
    * Note that the node must already be in a list
    * @param item item to remove
+   * @return true When the deletion is successful
+   * @return false When the deletion fails
    */
-  void remove_if_exists(T &item) {
+  bool remove_if_exists(T &item) {
     decltype(auto) node = get_node(&item);
     if (node->next && node->prev) {
       internal::list_remove_self_from_list(node);
+      return true;
     }
+    return false;
   }
 
   void rotate_left() { internal::list_rotate_left(&head_); }
